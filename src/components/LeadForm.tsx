@@ -18,6 +18,9 @@ import {
 } from "../lead/leadRepository";
 
 type LeadFormProps = {
+  clientId: string;
+  clientName: string;
+
   schema: ProductSchema;
   configuration: ConfigurationState;
   pricing: PricingResult | null;
@@ -36,6 +39,8 @@ type FormErrors = {
 };
 
 function LeadForm({
+  clientId,
+  clientName,
   schema,
   configuration,
   pricing,
@@ -71,19 +76,25 @@ function LeadForm({
   ] = useState(false);
 
   function validateForm(): FormErrors {
-    const nextErrors: FormErrors =
-      {};
+    const nextErrors:
+      FormErrors = {};
 
-    if (name.trim().length < 2) {
+    if (
+      name.trim().length < 2
+    ) {
       nextErrors.name =
         "Introdu un nume valid.";
     }
 
     const normalizedPhone =
-      phone.replace(/\s+/g, "");
+      phone.replace(
+        /\s+/g,
+        "",
+      );
 
     if (
-      normalizedPhone.length < 7
+      normalizedPhone.length <
+      7
     ) {
       nextErrors.phone =
         "Introdu un număr de telefon valid.";
@@ -103,7 +114,8 @@ function LeadForm({
   }
 
   async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
+    event:
+      FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
@@ -124,17 +136,24 @@ function LeadForm({
     const nextErrors =
       validateForm();
 
-    setErrors(nextErrors);
+    setErrors(
+      nextErrors,
+    );
 
     if (
-      Object.keys(nextErrors).length >
-      0
+      Object.keys(
+        nextErrors,
+      ).length > 0
     ) {
       return;
     }
 
     const lead =
       createLeadSnapshot(
+        {
+          id: clientId,
+          name: clientName,
+        },
         schema,
         configuration,
         pricing,
@@ -147,13 +166,17 @@ function LeadForm({
       );
 
     try {
-      setIsSubmitting(true);
+      setIsSubmitting(
+        true,
+      );
 
       await saveLeadToDatabase(
         lead,
       );
 
-      onLeadCreated?.(lead);
+      onLeadCreated?.(
+        lead,
+      );
 
       setSuccessMessage(
         "Solicitarea a fost salvată în baza de date.",
@@ -164,7 +187,9 @@ function LeadForm({
       setEmail("");
       setErrors({});
     } catch (error) {
-      console.error(error);
+      console.error(
+        error,
+      );
 
       setSubmitError(
         error instanceof Error
@@ -172,7 +197,9 @@ function LeadForm({
           : "Solicitarea nu a putut fi salvată.",
       );
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(
+        false,
+      );
     }
   }
 
@@ -185,15 +212,18 @@ function LeadForm({
 
         <p>
           Lasă datele de contact,
-          iar configurația și prețul
-          estimativ vor fi salvate
-          împreună cu solicitarea.
+          iar configurația și
+          prețul estimativ vor fi
+          salvate împreună cu
+          solicitarea.
         </p>
       </div>
 
       <form
         className="lead-form"
-        onSubmit={handleSubmit}
+        onSubmit={
+          handleSubmit
+        }
       >
         <div className="lead-field">
           <label
@@ -212,9 +242,12 @@ function LeadForm({
             }
             type="text"
             value={name}
-            onChange={(event) =>
+            onChange={(
+              event,
+            ) =>
               setName(
-                event.target.value,
+                event.target
+                  .value,
               )
             }
             placeholder="Ex. Ion Popescu"
@@ -244,9 +277,12 @@ function LeadForm({
             }
             type="tel"
             value={phone}
-            onChange={(event) =>
+            onChange={(
+              event,
+            ) =>
               setPhone(
-                event.target.value,
+                event.target
+                  .value,
               )
             }
             placeholder="+373 ..."
@@ -276,9 +312,12 @@ function LeadForm({
             }
             type="email"
             value={email}
-            onChange={(event) =>
+            onChange={(
+              event,
+            ) =>
               setEmail(
-                event.target.value,
+                event.target
+                  .value,
               )
             }
             placeholder="email@exemplu.md"
@@ -307,14 +346,17 @@ function LeadForm({
 
         {!configurationIsValid && (
           <p className="lead-disabled-note">
-            Corectează configurația
-            înainte de trimitere.
+            Corectează
+            configurația înainte
+            de trimitere.
           </p>
         )}
 
         {successMessage && (
           <div className="lead-success">
-            {successMessage}
+            {
+              successMessage
+            }
           </div>
         )}
 

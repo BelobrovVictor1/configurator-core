@@ -32,10 +32,14 @@ import ProductPreview from "./ProductPreview";
 import LeadForm from "./LeadForm";
 
 type ConfiguratorProps = {
+  clientId: string;
+  clientName: string;
   schema: ProductSchema;
 };
 
 function Configurator({
+  clientId,
+  clientName,
   schema,
 }: ConfiguratorProps) {
   const [
@@ -49,66 +53,81 @@ function Configurator({
         ),
     );
 
-  const validation = useMemo(
-    () =>
-      validateConfiguration(
+  const validation =
+    useMemo(
+      () =>
+        validateConfiguration(
+          schema,
+          configuration,
+        ),
+      [
         schema,
         configuration,
-      ),
-    [
-      schema,
-      configuration,
-    ],
-  );
-
-  const errorMap = useMemo(() => {
-    const result: Record<
-      string,
-      string
-    > = {};
-
-    for (
-      const error of validation.errors
-    ) {
-      if (!result[error.optionId]) {
-        result[error.optionId] =
-          error.message;
-      }
-    }
-
-    return result;
-  }, [validation.errors]);
-
-  const pricing = useMemo(() => {
-    if (!validation.valid) {
-      return null;
-    }
-
-    return calculatePrice(
-      schema,
-      configuration,
+      ],
     );
-  }, [
-    schema,
-    configuration,
-    validation.valid,
-  ]);
 
-  const preview = useMemo(
-    () =>
-      buildPreview(
+  const errorMap =
+    useMemo(() => {
+      const result: Record<
+        string,
+        string
+      > = {};
+
+      for (
+        const error of
+        validation.errors
+      ) {
+        if (
+          !result[
+            error.optionId
+          ]
+        ) {
+          result[
+            error.optionId
+          ] = error.message;
+        }
+      }
+
+      return result;
+    }, [
+      validation.errors,
+    ]);
+
+  const pricing =
+    useMemo(() => {
+      if (
+        !validation.valid
+      ) {
+        return null;
+      }
+
+      return calculatePrice(
         schema,
         configuration,
-      ),
-    [
+      );
+    }, [
       schema,
       configuration,
-    ],
-  );
+      validation.valid,
+    ]);
+
+  const preview =
+    useMemo(
+      () =>
+        buildPreview(
+          schema,
+          configuration,
+        ),
+      [
+        schema,
+        configuration,
+      ],
+    );
 
   function handleOptionChange(
     optionId: string,
-    value: ConfigurationValue,
+    value:
+      ConfigurationValue,
   ) {
     setConfiguration(
       (currentState) =>
@@ -128,7 +147,8 @@ function Configurator({
           {schema.product.name}
         </h1>
 
-        {schema.product.description && (
+        {schema.product
+          .description && (
           <p>
             {
               schema.product
@@ -158,7 +178,9 @@ function Configurator({
               >
                 <div className="configurator-step-header">
                   <h2>
-                    {stepIndex + 1}.{" "}
+                    {stepIndex +
+                      1}
+                    .{" "}
                     {step.title}
                   </h2>
 
@@ -174,7 +196,9 @@ function Configurator({
                 {step.options.map(
                   (optionId) => (
                     <OptionRenderer
-                      key={optionId}
+                      key={
+                        optionId
+                      }
                       optionId={
                         optionId
                       }
@@ -198,12 +222,22 @@ function Configurator({
           )}
 
           <LeadForm
+            clientId={
+              clientId
+            }
+            clientName={
+              clientName
+            }
             schema={schema}
             configuration={
               configuration
             }
-            pricing={pricing}
-            preview={preview}
+            pricing={
+              pricing
+            }
+            preview={
+              preview
+            }
             configurationIsValid={
               validation.valid
             }
@@ -214,14 +248,14 @@ function Configurator({
           configuration={
             configuration
           }
-          pricing={pricing}
+          pricing={
+            pricing
+          }
           isValid={
             validation.valid
           }
         />
       </div>
-
-      
     </>
   );
 }

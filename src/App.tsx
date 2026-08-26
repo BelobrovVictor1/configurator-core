@@ -18,6 +18,16 @@ function App() {
         <Route
           path="/"
           element={
+            <Navigate
+              to="/c/ferestre-max"
+              replace
+            />
+          }
+        />
+
+        <Route
+          path="/c/:clientSlug"
+          element={
             <PublicConfiguratorPage />
           }
         />

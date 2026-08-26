@@ -3,6 +3,11 @@ import {
   useState,
 } from "react";
 
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
+
 import windowBasic from "../configs/windowBasic";
 import gateTest from "../configs/gateTest";
 
@@ -11,40 +16,96 @@ import {
   type ProductSchema,
 } from "../schema/productSchema";
 
+import {
+  clients,
+  getClientBySlug,
+} from "../clients/clients";
+
 import Configurator from "../components/Configurator";
 
-type ProductId =
-  | "window-basic"
-  | "gate-test";
-
 const rawProducts = {
-  "window-basic": windowBasic,
-  "gate-test": gateTest,
+  "window-basic":
+    windowBasic,
+
+  "gate-test":
+    gateTest,
 };
 
+type ProductId =
+  keyof typeof rawProducts;
+
 function PublicConfiguratorPage() {
-  const [
-    selectedProductId,
-    setSelectedProductId,
-  ] = useState<ProductId>(
-    "window-basic",
-  );
+  const {
+    clientSlug,
+  } =
+    useParams<{
+      clientSlug?: string;
+    }>();
 
-  const schemaResult = useMemo(
-    () =>
-      productSchema.safeParse(
-        rawProducts[
-          selectedProductId
-        ],
-      ),
-    [selectedProductId],
-  );
+  const selectedClient =
+    clientSlug
+      ? getClientBySlug(
+          clientSlug,
+        )
+      : clients[0];
 
-  if (!schemaResult.success) {
+  if (!selectedClient) {
     return (
       <main className="schema-error">
         <h1>
-          Configurator Core Engine
+          Client inexistent
+        </h1>
+
+        <p>
+          Configuratorul solicitat
+          nu există.
+        </p>
+
+        <Link to="/">
+          Înapoi
+        </Link>
+      </main>
+    );
+  }
+
+  const availableProducts =
+    selectedClient.productIds.filter(
+      (
+        productId,
+      ): productId is ProductId =>
+        productId in
+        rawProducts,
+    );
+
+  const [
+    selectedProductId,
+    setSelectedProductId,
+  ] =
+    useState<ProductId>(
+      availableProducts[0],
+    );
+
+  const schemaResult =
+    useMemo(
+      () =>
+        productSchema.safeParse(
+          rawProducts[
+            selectedProductId
+          ],
+        ),
+      [
+        selectedProductId,
+      ],
+    );
+
+  if (
+    !schemaResult.success
+  ) {
+    return (
+      <main className="schema-error">
+        <h1>
+          Configurator Core
+          Engine
         </h1>
 
         <h2>
@@ -53,7 +114,8 @@ function PublicConfiguratorPage() {
 
         <pre className="configuration-code">
           {JSON.stringify(
-            schemaResult.error.issues,
+            schemaResult.error
+              .issues,
             null,
             2,
           )}
@@ -67,48 +129,115 @@ function PublicConfiguratorPage() {
       schemaResult.data;
 
   return (
-    <div className="app-shell">
+    <div
+      className="app-shell"
+      style={
+        {
+          "--brand-primary":
+            selectedClient
+              .brand
+              .primaryColor,
+        } as React.CSSProperties
+      }
+    >
       <main className="configurator-page">
-        <div className="product-switcher">
+        <header className="client-brand-header">
           <div>
-            <div className="product-switcher-label">
-              Configurator
+            <div className="client-brand-name">
+              {
+                selectedClient
+                  .brand.name
+              }
             </div>
 
-            <strong>
-              Selectează produsul
-            </strong>
+            {selectedClient
+              .brand
+              .tagline && (
+              <p>
+                {
+                  selectedClient
+                    .brand
+                    .tagline
+                }
+              </p>
+            )}
           </div>
+        </header>
 
-          <select
-            className="product-switcher-select"
-            value={
-              selectedProductId
-            }
-            onChange={(
-              event,
-            ) =>
-              setSelectedProductId(
-                event.target
-                  .value as ProductId,
-              )
-            }
-          >
-            <option value="window-basic">
-              Fereastră PVC
-            </option>
+        {availableProducts.length >
+          1 && (
+          <div className="product-switcher">
+            <div>
+              <div className="product-switcher-label">
+                Configurator
+              </div>
 
-            <option value="gate-test">
-              Poartă metalică
-            </option>
-          </select>
-        </div>
+              <strong>
+                Selectează
+                produsul
+              </strong>
+            </div>
+
+            <select
+              className="product-switcher-select"
+              value={
+                selectedProductId
+              }
+              onChange={(
+                event,
+              ) =>
+                setSelectedProductId(
+                  event.target
+                    .value as ProductId,
+                )
+              }
+            >
+              {availableProducts.map(
+                (
+                  productId,
+                ) => {
+                  const result =
+                    productSchema.safeParse(
+                      rawProducts[
+                        productId
+                      ],
+                    );
+
+                  return (
+                    <option
+                      key={
+                        productId
+                      }
+                      value={
+                        productId
+                      }
+                    >
+                      {result.success
+                        ? result
+                            .data
+                            .product
+                            .name
+                        : productId}
+                    </option>
+                  );
+                },
+              )}
+            </select>
+          </div>
+        )}
 
         <Configurator
-          key={
-            schema.product.id
+          key={`${selectedClient.id}-${schema.product.id}`}
+          clientId={
+            selectedClient.id
           }
-          schema={schema}
+          clientName={
+            selectedClient
+              .brand.name
+          }
+          schema={
+            schema
+          }
         />
       </main>
     </div>

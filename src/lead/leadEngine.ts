@@ -9,8 +9,17 @@ export type LeadCustomer = {
   email?: string;
 };
 
+export type LeadClient = {
+  id: string;
+  name: string;
+};
+
 export type LeadSnapshot = {
   leadId: string;
+
+  clientId: string;
+  clientName: string;
+
   productId: string;
   productName: string;
   schemaVersion: string;
@@ -51,6 +60,7 @@ function generateLeadId(): string {
 }
 
 export function createLeadSnapshot(
+  client: LeadClient,
   schema: ProductSchema,
   configuration: ConfigurationState,
   pricing: PricingResult,
@@ -58,83 +68,132 @@ export function createLeadSnapshot(
   customer: LeadCustomer,
 ): LeadSnapshot {
   return {
-    leadId: generateLeadId(),
+    leadId:
+      generateLeadId(),
 
-    productId: schema.product.id,
-    productName: schema.product.name,
-    schemaVersion: schema.schemaVersion,
+    clientId:
+      client.id,
+
+    clientName:
+      client.name,
+
+    productId:
+      schema.product.id,
+
+    productName:
+      schema.product.name,
+
+    schemaVersion:
+      schema.schemaVersion,
 
     configuration: {
       ...configuration,
     },
 
     pricing: {
-      subtotal: pricing.subtotal,
-      total: pricing.total,
-      currency: pricing.currency,
-      formattedTotal: pricing.formattedTotal,
+      subtotal:
+        pricing.subtotal,
+
+      total:
+        pricing.total,
+
+      currency:
+        pricing.currency,
+
+      formattedTotal:
+        pricing.formattedTotal,
     },
 
     preview: {
-      renderer: preview.renderer,
-      width: preview.width,
-      height: preview.height,
-      primaryColor: preview.primaryColor,
-      label: preview.label,
+      renderer:
+        preview.renderer,
+
+      width:
+        preview.width,
+
+      height:
+        preview.height,
+
+      primaryColor:
+        preview.primaryColor,
+
+      label:
+        preview.label,
     },
 
     customer: {
-      name: customer.name.trim(),
-      phone: customer.phone.trim(),
-      email: customer.email?.trim() || undefined,
+      name:
+        customer.name.trim(),
+
+      phone:
+        customer.phone.trim(),
+
+      email:
+        customer.email?.trim() ||
+        undefined,
     },
 
-    createdAt: new Date().toISOString(),
+    createdAt:
+      new Date().toISOString(),
   };
 }
 
 export function saveLeadLocally(
   lead: LeadSnapshot,
 ): void {
-  const storageKey = "configurator-leads";
+  const storageKey =
+    "configurator-leads";
 
   const existingRaw =
-    localStorage.getItem(storageKey);
+    localStorage.getItem(
+      storageKey,
+    );
 
-  let existingLeads: LeadSnapshot[] = [];
+  let existingLeads:
+    LeadSnapshot[] = [];
 
   if (existingRaw) {
     try {
-      const parsed = JSON.parse(existingRaw);
+      const parsed =
+        JSON.parse(existingRaw);
 
       if (Array.isArray(parsed)) {
-        existingLeads = parsed;
+        existingLeads =
+          parsed;
       }
     } catch {
       existingLeads = [];
     }
   }
 
-  existingLeads.unshift(lead);
+  existingLeads.unshift(
+    lead,
+  );
 
   localStorage.setItem(
     storageKey,
-    JSON.stringify(existingLeads),
+    JSON.stringify(
+      existingLeads,
+    ),
   );
 }
 
 export function getSavedLeads(): LeadSnapshot[] {
-  const storageKey = "configurator-leads";
+  const storageKey =
+    "configurator-leads";
 
   const existingRaw =
-    localStorage.getItem(storageKey);
+    localStorage.getItem(
+      storageKey,
+    );
 
   if (!existingRaw) {
     return [];
   }
 
   try {
-    const parsed = JSON.parse(existingRaw);
+    const parsed =
+      JSON.parse(existingRaw);
 
     if (!Array.isArray(parsed)) {
       return [];

@@ -4,8 +4,18 @@ import type {
   LeadSnapshot,
 } from "./leadEngine";
 
+export type LeadStatus =
+  | "new"
+  | "contacted"
+  | "quoted"
+  | "won"
+  | "lost";
+
 export type DatabaseLead = {
   id: string;
+
+  client_id: string;
+  client_name: string;
 
   product_id: string;
   product_name: string;
@@ -35,12 +45,7 @@ export type DatabaseLead = {
   customer_phone: string;
   customer_email: string | null;
 
-  status:
-    | "new"
-    | "contacted"
-    | "quoted"
-    | "won"
-    | "lost";
+  status: LeadStatus;
 
   created_at: string;
 };
@@ -48,38 +53,47 @@ export type DatabaseLead = {
 export async function saveLeadToDatabase(
   lead: LeadSnapshot,
 ): Promise<void> {
-  const { error } = await supabase
-    .from("leads")
-    .insert({
-      product_id:
-        lead.productId,
+  const { error } =
+    await supabase
+      .from("leads")
+      .insert({
+        client_id:
+          lead.clientId,
 
-      product_name:
-        lead.productName,
+        client_name:
+          lead.clientName,
 
-      schema_version:
-        lead.schemaVersion,
+        product_id:
+          lead.productId,
 
-      configuration:
-        lead.configuration,
+        product_name:
+          lead.productName,
 
-      pricing:
-        lead.pricing,
+        schema_version:
+          lead.schemaVersion,
 
-      preview:
-        lead.preview,
+        configuration:
+          lead.configuration,
 
-      customer_name:
-        lead.customer.name,
+        pricing:
+          lead.pricing,
 
-      customer_phone:
-        lead.customer.phone,
+        preview:
+          lead.preview,
 
-      customer_email:
-        lead.customer.email ?? null,
+        customer_name:
+          lead.customer.name,
 
-      status: "new",
-    });
+        customer_phone:
+          lead.customer.phone,
+
+        customer_email:
+          lead.customer.email ??
+          null,
+
+        status:
+          "new",
+      });
 
   if (error) {
     throw new Error(
@@ -91,15 +105,16 @@ export async function saveLeadToDatabase(
 export async function getLeadsFromDatabase(): Promise<
   DatabaseLead[]
 > {
-  const { data, error } = await supabase
-    .from("leads")
-    .select("*")
-    .order(
-      "created_at",
-      {
-        ascending: false,
-      },
-    );
+  const { data, error } =
+    await supabase
+      .from("leads")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending: false,
+        },
+      );
 
   if (error) {
     throw new Error(
@@ -107,5 +122,29 @@ export async function getLeadsFromDatabase(): Promise<
     );
   }
 
-  return (data ?? []) as DatabaseLead[];
+  return (
+    data ?? []
+  ) as DatabaseLead[];
+}
+
+export async function updateLeadStatus(
+  leadId: string,
+  status: LeadStatus,
+): Promise<void> {
+  const { error } =
+    await supabase
+      .from("leads")
+      .update({
+        status,
+      })
+      .eq(
+        "id",
+        leadId,
+      );
+
+  if (error) {
+    throw new Error(
+      `Supabase update failed: ${error.message}`,
+    );
+  }
 }
