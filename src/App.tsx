@@ -1,0 +1,53 @@
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
+
+import "./App.css";
+
+import PublicConfiguratorPage from "./pages/PublicConfiguratorPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <PublicConfiguratorPage />
+          }
+        />
+
+        <Route
+          path="/admin/login"
+          element={
+            <AdminLoginPage />
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <AdminDashboardPage />
+          }
+        />
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
