@@ -125,12 +125,13 @@ function PublicConfiguratorPage() {
     return (
       <main className="schema-error">
         <h1>
-          Configurator Core
-        </h1>
+  Configurator indisponibil
+</h1>
 
-        <h2>
-          Schema invalidă ❌
-        </h2>
+<p>
+  Produsul nu poate fi încărcat
+  momentan.
+</p>
 
         <pre className="configuration-code">
           {error instanceof Error
