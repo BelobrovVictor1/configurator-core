@@ -5,7 +5,6 @@ import {
 } from "react";
 
 import {
-  Link,
   useParams,
 } from "react-router-dom";
 
@@ -21,7 +20,7 @@ import {
 
 import Configurator from "../components/Configurator";
 
-function PublicConfiguratorPage() {
+function EmbedConfiguratorPage() {
   const {
     clientSlug,
   } =
@@ -66,21 +65,104 @@ function PublicConfiguratorPage() {
     availableProducts,
   ]);
 
+  useEffect(() => {
+    function getPageHeight() {
+      return Math.max(
+        document.body.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.clientHeight,
+        document.documentElement.scrollHeight,
+        document.documentElement.offsetHeight,
+      );
+    }
+
+    function sendHeight() {
+      const height =
+        getPageHeight();
+
+      window.parent.postMessage(
+        {
+          type:
+            "configurator:resize",
+
+          clientSlug:
+            clientSlug ?? "",
+
+          height,
+        },
+        "*",
+      );
+    }
+
+    sendHeight();
+
+    const resizeObserver =
+      new ResizeObserver(
+        () => {
+          window.requestAnimationFrame(
+            sendHeight,
+          );
+        },
+      );
+
+    resizeObserver.observe(
+      document.body,
+    );
+
+    resizeObserver.observe(
+      document.documentElement,
+    );
+
+    function handleMessage(
+      event: MessageEvent,
+    ) {
+      if (
+        event.data?.type ===
+        "configurator:request-resize"
+      ) {
+        sendHeight();
+      }
+    }
+
+    window.addEventListener(
+      "message",
+      handleMessage,
+    );
+
+    window.addEventListener(
+      "load",
+      sendHeight,
+    );
+
+    window.addEventListener(
+      "resize",
+      sendHeight,
+    );
+
+    return () => {
+      resizeObserver.disconnect();
+
+      window.removeEventListener(
+        "message",
+        handleMessage,
+      );
+
+      window.removeEventListener(
+        "load",
+        sendHeight,
+      );
+
+      window.removeEventListener(
+        "resize",
+        sendHeight,
+      );
+    };
+  }, [clientSlug]);
+
   if (!selectedClient) {
     return (
-      <main className="schema-error">
-        <h1>
-          Client inexistent
-        </h1>
-
-        <p>
-          Configuratorul solicitat
-          nu există.
-        </p>
-
-        <Link to="/">
-          Înapoi
-        </Link>
+      <main className="embed-error">
+        Configurator indisponibil.
       </main>
     );
   }
@@ -90,26 +172,16 @@ function PublicConfiguratorPage() {
     0
   ) {
     return (
-      <main className="schema-error">
-        <h1>
-          Niciun produs disponibil
-        </h1>
-
-        <p>
-          Acest client nu are
-          produse configurate.
-        </p>
+      <main className="embed-error">
+        Niciun produs disponibil.
       </main>
     );
   }
 
   if (!selectedProductId) {
     return (
-      <main className="schema-error">
-        <p>
-          Se încarcă
-          configuratorul...
-        </p>
+      <main className="embed-error">
+        Se încarcă...
       </main>
     );
   }
@@ -121,29 +193,17 @@ function PublicConfiguratorPage() {
       getProductSchema(
         selectedProductId,
       );
-  } catch (error) {
+  } catch {
     return (
-      <main className="schema-error">
-        <h1>
-          Configurator Core
-        </h1>
-
-        <h2>
-          Schema invalidă ❌
-        </h2>
-
-        <pre className="configuration-code">
-          {error instanceof Error
-            ? error.message
-            : "Eroare necunoscută"}
-        </pre>
+      <main className="embed-error">
+        Configurator indisponibil.
       </main>
     );
   }
 
   return (
     <div
-      className="app-shell"
+      className="app-shell embed-shell"
       style={
         {
           "--brand-primary":
@@ -153,43 +213,17 @@ function PublicConfiguratorPage() {
         } as React.CSSProperties
       }
     >
-      <main className="configurator-page">
-        <header className="client-brand-header">
-          <div>
-            <div className="client-brand-name">
-              {
-                selectedClient
-                  .brand.name
-              }
-            </div>
-
-            {selectedClient
-              .brand
-              .tagline && (
-              <p>
-                {
-                  selectedClient
-                    .brand
-                    .tagline
-                }
-              </p>
-            )}
+      <main className="embed-page">
+        <header className="embed-brand-header">
+          <div className="embed-brand-name">
+            {
+              selectedClient
+                .brand.name
+            }
           </div>
-        </header>
 
-        {availableProducts.length >
-          1 && (
-          <div className="product-switcher">
-            <div>
-              <div className="product-switcher-label">
-                Configurator
-              </div>
-
-              <strong>
-                Selectează produsul
-              </strong>
-            </div>
-
+          {availableProducts.length >
+            1 && (
             <select
               className="product-switcher-select"
               value={
@@ -226,11 +260,11 @@ function PublicConfiguratorPage() {
                 ),
               )}
             </select>
-          </div>
-        )}
+          )}
+        </header>
 
         <Configurator
-          key={`${selectedClient.id}-${schema.product.id}`}
+          key={`${selectedClient.id}-${schema.product.id}-embed`}
           clientId={
             selectedClient.id
           }
@@ -245,4 +279,4 @@ function PublicConfiguratorPage() {
   );
 }
 
-export default PublicConfiguratorPage;
+export default EmbedConfiguratorPage;

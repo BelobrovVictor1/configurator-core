@@ -8,6 +8,7 @@ import {
 import "./App.css";
 
 import PublicConfiguratorPage from "./pages/PublicConfiguratorPage";
+import EmbedConfiguratorPage from "./pages/EmbedConfiguratorPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 
@@ -29,6 +30,13 @@ function App() {
           path="/c/:clientSlug"
           element={
             <PublicConfiguratorPage />
+          }
+        />
+
+        <Route
+          path="/embed/:clientSlug"
+          element={
+            <EmbedConfiguratorPage />
           }
         />
 

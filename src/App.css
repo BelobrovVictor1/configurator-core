@@ -1195,3 +1195,83 @@
     grid-template-columns: 1fr;
   }
 }
+.embed-shell {
+  background: transparent;
+}
+
+.embed-page {
+  width: min(
+    1100px,
+    calc(100% - 24px)
+  );
+
+  margin: 0 auto;
+  padding: 12px 0 24px;
+}
+
+.embed-brand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  margin-bottom: 18px;
+  padding: 12px 0 14px;
+
+  border-bottom:
+    2px solid
+    var(
+      --brand-primary,
+      #111111
+    );
+}
+
+.embed-brand-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.embed-page
+  .configurator-header {
+  margin-bottom: 20px;
+}
+
+.embed-page
+  .configurator-header h1 {
+  font-size: 30px;
+}
+
+.embed-page
+  .preview-card {
+  margin-bottom: 20px;
+}
+
+.embed-page
+  .configurator-layout {
+  gap: 20px;
+}
+
+.embed-page
+  .configurator-step,
+.embed-page
+  .lead-card,
+.embed-page
+  .summary-panel,
+.embed-page
+  .preview-card {
+  border-radius: 12px;
+}
+
+.embed-error {
+  padding: 30px;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  text-align: center;
+  color: #6b7280;
+}
