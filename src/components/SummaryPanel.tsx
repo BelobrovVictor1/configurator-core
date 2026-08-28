@@ -110,6 +110,18 @@ const optionLabels: Record<
   fenceLength:
     "Lungime totală",
 
+  segment1:
+    "Segment 1",
+
+  segment2:
+    "Segment 2",
+
+  segment3:
+    "Segment 3",
+
+  segment4:
+    "Segment 4",
+
   panelType:
     "Tip panou",
 
@@ -138,7 +150,10 @@ function formatConfigurationValue(
 
   if (
     optionId ===
-    "fenceLength"
+      "fenceLength" ||
+    optionId.startsWith(
+      "segment",
+    )
   ) {
     return `${value} m`;
   }
@@ -174,6 +189,22 @@ function SummaryPanel({
           "string" ||
         typeof entry[1] ===
           "number",
+    )
+    .filter(
+      ([optionId, value]) => {
+        if (
+          optionId.startsWith(
+            "segment",
+          ) &&
+          typeof value ===
+            "number" &&
+          value === 0
+        ) {
+          return false;
+        }
+
+        return true;
+      },
     );
 
   return (

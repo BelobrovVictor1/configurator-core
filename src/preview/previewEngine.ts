@@ -156,8 +156,7 @@ function buildModularPreview(
     schema.pricing.base;
 
   if (
-    base.type !==
-    "modular"
+    base.type !== "modular"
   ) {
     throw new Error(
       "Modular preview requires modular pricing.",
@@ -178,19 +177,6 @@ function buildModularPreview(
       base.lengthOption,
     );
 
-  /*
-   * Pentru gard nu folosim raportul geometric
-   * lungime totală / înălțime reală pentru
-   * reprezentare, deoarece un gard de 30 m ar
-   * deveni aproape o linie pe ecran.
-   *
-   * Preview-ul fence-basic are propriul renderer
-   * proporțional și folosește această dimensiune
-   * doar ca informație semantică.
-   */
-  const representativeHeight =
-    1.5;
-
   return {
     renderer:
       schema.preview.renderer,
@@ -199,7 +185,7 @@ function buildModularPreview(
       length,
 
     height:
-      representativeHeight,
+      1.5,
 
     aspectRatio:
       4,
@@ -212,6 +198,85 @@ function buildModularPreview(
 
     label:
       `${length} ${base.unit} traseu`,
+  };
+}
+
+function buildSegmentPreview(
+  schema: ProductSchema,
+  state: ConfigurationState,
+): PreviewResult {
+  const base =
+    schema.pricing.base;
+
+  if (
+    base.type !==
+    "modular_segments"
+  ) {
+    throw new Error(
+      "Segment preview requires segment pricing.",
+    );
+  }
+
+  if (
+    !schema.preview
+  ) {
+    throw new Error(
+      "This product does not define a preview configuration.",
+    );
+  }
+
+  const segmentLengths =
+    base.segmentOptions.map(
+      (optionId) =>
+        getNumericValue(
+          state,
+          optionId,
+        ),
+    );
+
+  const totalLength =
+    segmentLengths.reduce(
+      (
+        sum,
+        value,
+      ) =>
+        sum + value,
+      0,
+    );
+
+  const activeSegments =
+    segmentLengths.filter(
+      (value) =>
+        value > 0,
+    ).length;
+
+  return {
+    renderer:
+      schema.preview.renderer,
+
+    width:
+      totalLength,
+
+    height:
+      1.5,
+
+    aspectRatio:
+      4,
+
+    primaryColor:
+      getColorValue(
+        schema,
+        state,
+      ),
+
+    label:
+      `${totalLength.toFixed(
+        1,
+      )} ${base.unit} · ${activeSegments} ${
+        activeSegments === 1
+          ? "segment"
+          : "segmente"
+      }`,
   };
 }
 
@@ -234,6 +299,17 @@ export function buildPreview(
       .type === "modular"
   ) {
     return buildModularPreview(
+      schema,
+      state,
+    );
+  }
+
+  if (
+    schema.pricing.base
+      .type ===
+    "modular_segments"
+  ) {
+    return buildSegmentPreview(
       schema,
       state,
     );

@@ -563,6 +563,347 @@ function calculateModularPrice(
   };
 }
 
+function calculateModularSegmentsPrice(
+  schema: ProductSchema,
+  state: ConfigurationState,
+): PricingResult {
+  const base =
+    schema.pricing.base;
+
+  if (
+    base.type !==
+    "modular_segments"
+  ) {
+    throw new Error(
+      "Segment modular pricing expected.",
+    );
+  }
+
+  const moduleWidthMeters =
+    convertDimensionToMeters(
+      base.moduleWidth,
+      base.unit,
+    );
+
+  const rawSegments =
+    base.segmentOptions.map(
+      (optionId) => ({
+        optionId,
+
+        lengthMeters:
+          convertDimensionToMeters(
+            getNumericConfigurationValue(
+              state,
+              optionId,
+            ),
+            base.unit,
+          ),
+      }),
+    );
+
+  const positiveSegments =
+    rawSegments.filter(
+      (segment) =>
+        segment.lengthMeters >
+        0,
+    );
+
+  if (
+    positiveSegments.length ===
+    0
+  ) {
+    throw new Error(
+      "At least one fence segment must be greater than zero.",
+    );
+  }
+
+  let totalDeductionMeters =
+    0;
+
+  for (
+    const optionId of
+    base.deductionOptions
+  ) {
+    const selectedDefinition =
+      getSelectedOptionDefinition(
+        schema,
+        state,
+        optionId,
+      );
+
+    totalDeductionMeters +=
+      convertDimensionToMeters(
+        selectedDefinition
+          .lengthDeduction ?? 0,
+        base.unit,
+      );
+  }
+
+  const totalLengthMeters =
+    positiveSegments.reduce(
+      (
+        sum,
+        segment,
+      ) =>
+        sum +
+        segment.lengthMeters,
+      0,
+    );
+
+  if (
+    totalDeductionMeters >=
+    totalLengthMeters
+  ) {
+    throw new Error(
+      "Gate and wicket deductions cannot consume the entire fence length.",
+    );
+  }
+
+  /*
+   * V1 rule:
+   * deductions are applied against the first
+   * positive segment. This is explicit and
+   * deterministic, but later we should let the
+   * user specify on which segment each gate sits.
+   */
+  const adjustedSegments =
+    positiveSegments.map(
+      (
+        segment,
+        index,
+      ) => ({
+        ...segment,
+
+        adjustedLength:
+          index === 0
+            ? Math.max(
+                0,
+                segment.lengthMeters -
+                  totalDeductionMeters,
+              )
+            : segment.lengthMeters,
+      }),
+    );
+
+  const segmentResults =
+    adjustedSegments.map(
+      (
+        segment,
+        index,
+      ) => ({
+        index:
+          index + 1,
+
+        length:
+          segment.adjustedLength,
+
+        modules:
+          segment.adjustedLength >
+          0
+            ? Math.ceil(
+                segment.adjustedLength /
+                  moduleWidthMeters,
+              )
+            : 0,
+      }),
+    );
+
+  const moduleCount =
+    segmentResults.reduce(
+      (
+        sum,
+        segment,
+      ) =>
+        sum +
+        segment.modules,
+      0,
+    );
+
+  /*
+   * Each separate segment needs its own
+   * start/end posts, then cornerPostExtra can
+   * account for project-specific corner logic.
+   */
+  const postCount =
+    segmentResults.reduce(
+      (
+        sum,
+        segment,
+      ) =>
+        sum +
+        (
+          segment.modules >
+          0
+            ? segment.modules +
+              1
+            : 0
+        ),
+      0,
+    ) +
+    base.cornerPostExtra;
+
+  const clipCount =
+    moduleCount *
+    base.clipsPerModule;
+
+  const modulesCost =
+    moduleCount *
+    base.modulePrice;
+
+  const postsCost =
+    postCount *
+    base.postPrice;
+
+  const clipsCost =
+    clipCount *
+    base.clipPrice;
+
+  const basePrice =
+    modulesCost +
+    postsCost +
+    clipsCost;
+
+  const breakdown:
+    PricingBreakdownItem[] =
+    [
+      {
+        label:
+          "Lungime totală traseu",
+
+        value:
+          totalLengthMeters,
+
+        formattedValue:
+          `${totalLengthMeters.toFixed(
+            2,
+          )} m`,
+      },
+
+      {
+        label:
+          "Lungime ocupată de poartă/portiță",
+
+        value:
+          totalDeductionMeters,
+
+        formattedValue:
+          `${totalDeductionMeters.toFixed(
+            2,
+          )} m`,
+      },
+    ];
+
+  for (
+    const segment of
+    segmentResults
+  ) {
+    breakdown.push({
+      label:
+        `Segment ${segment.index}`,
+
+      value:
+        segment.modules,
+
+      formattedValue:
+        `${segment.length.toFixed(
+          2,
+        )} m → ${
+          segment.modules
+        } panouri`,
+    });
+  }
+
+  breakdown.push(
+    {
+      label:
+        "Panouri total",
+
+      value:
+        moduleCount,
+
+      formattedValue:
+        `${moduleCount} buc. × ${formatMoney(
+          base.modulePrice,
+          schema.pricing
+            .currency,
+        )}`,
+    },
+
+    {
+      label:
+        "Stâlpi total",
+
+      value:
+        postCount,
+
+      formattedValue:
+        `${postCount} buc. × ${formatMoney(
+          base.postPrice,
+          schema.pricing
+            .currency,
+        )}`,
+    },
+
+    {
+      label:
+        "Elemente de fixare",
+
+      value:
+        clipCount,
+
+      formattedValue:
+        `${clipCount} buc. × ${formatMoney(
+          base.clipPrice,
+          schema.pricing
+            .currency,
+        )}`,
+    },
+
+    {
+      label:
+        "Subtotal structură",
+
+      value:
+        basePrice,
+
+      formattedValue:
+        formatMoney(
+          basePrice,
+          schema.pricing
+            .currency,
+        ),
+    },
+  );
+
+  const total =
+    applyPricingModifiers(
+      schema,
+      state,
+      basePrice,
+      breakdown,
+    );
+
+  return {
+    subtotal:
+      basePrice,
+
+    total,
+
+    currency:
+      schema.pricing
+        .currency,
+
+    formattedTotal:
+      formatMoney(
+        total,
+        schema.pricing
+          .currency,
+      ),
+
+    breakdown,
+  };
+}
+
 export function calculatePrice(
   schema: ProductSchema,
   state: ConfigurationState,
@@ -582,6 +923,17 @@ export function calculatePrice(
       .type === "modular"
   ) {
     return calculateModularPrice(
+      schema,
+      state,
+    );
+  }
+
+  if (
+    schema.pricing.base
+      .type ===
+    "modular_segments"
+  ) {
+    return calculateModularSegmentsPrice(
       schema,
       state,
     );

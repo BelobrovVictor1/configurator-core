@@ -172,12 +172,60 @@ const modularPricingBaseSchema =
       ),
   });
 
+const modularSegmentsPricingBaseSchema =
+  z.object({
+    type: z.literal(
+      "modular_segments",
+    ),
+
+    segmentOptions:
+      z.array(
+        z.string().min(1),
+      )
+      .min(1),
+
+    unit: z.enum([
+      "mm",
+      "cm",
+      "m",
+    ]),
+
+    moduleWidth:
+      z.number().positive(),
+
+    modulePrice:
+      z.number().min(0),
+
+    postPrice:
+      z.number().min(0),
+
+    clipsPerModule:
+      z.number()
+        .int()
+        .min(0),
+
+    clipPrice:
+      z.number().min(0),
+
+    cornerPostExtra:
+      z.number()
+        .int()
+        .min(0)
+        .default(0),
+
+    deductionOptions:
+      z.array(
+        z.string().min(1),
+      ),
+  });
+
 const pricingBaseSchema =
   z.discriminatedUnion(
     "type",
     [
       areaPricingBaseSchema,
       modularPricingBaseSchema,
+      modularSegmentsPricingBaseSchema,
     ],
   );
 
@@ -450,6 +498,66 @@ export const productSchema =
 
                 message:
                   `Modular pricing deduction refers to unknown option "${optionId}".`,
+
+                path: [
+                  "pricing",
+                  "base",
+                  "deductionOptions",
+                ],
+              });
+            }
+          }
+        }
+
+        if (
+          schema.pricing.base
+            .type ===
+          "modular_segments"
+        ) {
+          const {
+            segmentOptions,
+            deductionOptions,
+          } =
+            schema.pricing.base;
+
+          for (
+            const segmentOption of
+            segmentOptions
+          ) {
+            if (
+              !optionIds.has(
+                segmentOption,
+              )
+            ) {
+              ctx.addIssue({
+                code: "custom",
+
+                message:
+                  `Segment pricing refers to unknown option "${segmentOption}".`,
+
+                path: [
+                  "pricing",
+                  "base",
+                  "segmentOptions",
+                ],
+              });
+            }
+          }
+
+          for (
+            const optionId of
+            deductionOptions
+          ) {
+            if (
+              !optionIds.has(
+                optionId,
+              )
+            ) {
+              ctx.addIssue({
+                code: "custom",
+
+                message:
+                  `Segment pricing deduction refers to unknown option "${optionId}".`,
 
                 path: [
                   "pricing",

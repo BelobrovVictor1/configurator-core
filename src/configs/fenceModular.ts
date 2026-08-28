@@ -9,26 +9,31 @@ const fenceModular = {
       "Gard din panouri modulare",
 
     description:
-      "Configurează lungimea gardului, panourile, culoarea și elementele de acces.",
+      "Configurează traseul gardului, panourile, culoarea și elementele de acces.",
   },
 
   steps: [
     {
-      id: "length",
+      id:
+        "segments",
 
       title:
-        "Lungimea gardului",
+        "Traseul gardului",
 
       description:
-        "Introdu lungimea totală a traseului de gard.",
+        "Introdu lungimea fiecărei laturi. Pentru un gard drept completează doar Segmentul 1.",
 
       options: [
-        "fenceLength",
+        "segment1",
+        "segment2",
+        "segment3",
+        "segment4",
       ],
     },
 
     {
-      id: "panel",
+      id:
+        "panel",
 
       title:
         "Panoul",
@@ -44,7 +49,8 @@ const fenceModular = {
     },
 
     {
-      id: "access",
+      id:
+        "access",
 
       title:
         "Acces",
@@ -60,23 +66,86 @@ const fenceModular = {
   ],
 
   options: {
-    fenceLength: {
+    segment1: {
       id:
-        "fenceLength",
+        "segment1",
 
       label:
-        "Lungime totală gard (m)",
+        "Segment 1 (m)",
 
       inputType:
         "numeric_single",
 
       required: true,
 
-      defaultValue: 25,
+      defaultValue: 20,
 
       validation: {
         required: true,
-        min: 2,
+        min: 0,
+        max: 500,
+      },
+    },
+
+    segment2: {
+      id:
+        "segment2",
+
+      label:
+        "Segment 2 (m)",
+
+      inputType:
+        "numeric_single",
+
+      required: true,
+
+      defaultValue: 0,
+
+      validation: {
+        required: true,
+        min: 0,
+        max: 500,
+      },
+    },
+
+    segment3: {
+      id:
+        "segment3",
+
+      label:
+        "Segment 3 (m)",
+
+      inputType:
+        "numeric_single",
+
+      required: true,
+
+      defaultValue: 0,
+
+      validation: {
+        required: true,
+        min: 0,
+        max: 500,
+      },
+    },
+
+    segment4: {
+      id:
+        "segment4",
+
+      label:
+        "Segment 4 (m)",
+
+      inputType:
+        "numeric_single",
+
+      required: true,
+
+      defaultValue: 0,
+
+      validation: {
+        required: true,
+        min: 0,
         max: 500,
       },
     },
@@ -361,14 +430,19 @@ const fenceModular = {
   },
 
   pricing: {
-    currency: "MDL",
+    currency:
+      "MDL",
 
     base: {
       type:
-        "modular",
+        "modular_segments",
 
-      lengthOption:
-        "fenceLength",
+      segmentOptions: [
+        "segment1",
+        "segment2",
+        "segment3",
+        "segment4",
+      ],
 
       unit: "m",
 
@@ -386,6 +460,9 @@ const fenceModular = {
 
       clipPrice:
         18,
+
+      cornerPostExtra:
+        0,
 
       deductionOptions: [
         "vehicleGate",
@@ -475,14 +552,6 @@ const fenceModular = {
         sourceOption:
           "color",
       },
-
-      {
-        id:
-          "gate-layer",
-
-        sourceOption:
-          "vehicleGate",
-      },
     ],
   },
 
@@ -518,7 +587,7 @@ const fenceModular = {
       "modular-fences",
 
     pricingStrategy:
-      "modular",
+      "modular_segments",
 
     status:
       "development",
