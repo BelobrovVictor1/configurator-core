@@ -1275,3 +1275,177 @@
   text-align: center;
   color: #6b7280;
 }
+
+.fence-preview {
+  position: relative;
+
+  width: min(
+    620px,
+    calc(100% - 30px)
+  );
+
+  height: 230px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  padding: 25px 15px 35px;
+}
+
+.fence-ground {
+  position: absolute;
+
+  left: 4%;
+  right: 4%;
+  bottom: 28px;
+
+  height: 3px;
+
+  border-radius: 999px;
+
+  background: #aeb4ba;
+}
+
+.fence-sections {
+  position: relative;
+
+  width: 100%;
+  height: 145px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.fence-section {
+  position: relative;
+
+  flex: 1;
+
+  height: 145px;
+
+  display: flex;
+  align-items: flex-end;
+}
+
+.fence-post {
+  position: relative;
+  z-index: 2;
+
+  width: 7px;
+  height: 154px;
+
+  flex: 0 0 7px;
+
+  border-radius:
+    2px 2px 0 0;
+
+  background: #555c61;
+
+  box-shadow:
+    0 2px 4px
+    rgba(
+      0,
+      0,
+      0,
+      0.15
+    );
+}
+
+.fence-post-last {
+  position: absolute;
+
+  right: 0;
+  bottom: 0;
+}
+
+.fence-panel {
+  position: relative;
+
+  height: 130px;
+
+  flex: 1;
+
+  margin-bottom: 5px;
+
+  overflow: hidden;
+
+  border:
+    2px solid
+    #444;
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 11px,
+      rgba(
+        60,
+        65,
+        70,
+        0.25
+      ) 11px,
+      rgba(
+        60,
+        65,
+        70,
+        0.25
+      ) 13px
+    );
+}
+
+.fence-wire {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  height: 2px;
+
+  opacity: 0.85;
+}
+
+.fence-wire-1 {
+  top: 18%;
+}
+
+.fence-wire-2 {
+  top: 34%;
+}
+
+.fence-wire-3 {
+  top: 50%;
+}
+
+.fence-wire-4 {
+  top: 66%;
+}
+
+.fence-wire-5 {
+  top: 82%;
+}
+
+@media (
+  max-width: 600px
+) {
+  .fence-preview {
+    height: 180px;
+    padding:
+      20px 5px 28px;
+  }
+
+  .fence-sections {
+    height: 110px;
+  }
+
+  .fence-post {
+    height: 118px;
+    width: 5px;
+    flex-basis: 5px;
+  }
+
+  .fence-panel {
+    height: 100px;
+  }
+}

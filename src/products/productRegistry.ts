@@ -1,5 +1,6 @@
 import windowBasic from "../configs/windowBasic";
 import gateTest from "../configs/gateTest";
+import fenceModular from "../configs/fenceModular";
 
 import {
   productSchema,
@@ -7,8 +8,14 @@ import {
 } from "../schema/productSchema";
 
 export const rawProducts = {
-  "window-basic": windowBasic,
-  "gate-test": gateTest,
+  "window-basic":
+    windowBasic,
+
+  "gate-test":
+    gateTest,
+
+  "fence-modular":
+    fenceModular,
 } as const;
 
 export type ProductId =
@@ -17,7 +24,9 @@ export type ProductId =
 export function isProductId(
   value: string,
 ): value is ProductId {
-  return value in rawProducts;
+  return (
+    value in rawProducts
+  );
 }
 
 export function getProductSchema(
@@ -25,10 +34,16 @@ export function getProductSchema(
 ): ProductSchema {
   const result =
     productSchema.safeParse(
-      rawProducts[productId],
+      rawProducts[
+        productId
+      ],
     );
 
   if (!result.success) {
+    console.error(
+      result.error.issues,
+    );
+
     throw new Error(
       `Product "${productId}" has an invalid schema.`,
     );

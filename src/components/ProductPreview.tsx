@@ -1,4 +1,6 @@
-import type { PreviewResult } from "../preview/previewEngine";
+import type {
+  PreviewResult,
+} from "../preview/previewEngine";
 
 type ProductPreviewProps = {
   preview: PreviewResult;
@@ -11,12 +13,20 @@ function calculateDisplaySize(
   const maxWidth = 420;
   const maxHeight = 260;
 
-  let width = maxWidth;
-  let height =
-    width / preview.aspectRatio;
+  let width =
+    maxWidth;
 
-  if (height > maxHeight) {
-    height = maxHeight;
+  let height =
+    width /
+    preview.aspectRatio;
+
+  if (
+    height >
+    maxHeight
+  ) {
+    height =
+      maxHeight;
+
     width =
       height *
       preview.aspectRatio;
@@ -34,14 +44,20 @@ function WindowPreview({
   preview: PreviewResult;
 }) {
   const size =
-    calculateDisplaySize(preview);
+    calculateDisplaySize(
+      preview,
+    );
 
   return (
     <div
       className="window-preview"
       style={{
-        width: `${size.width}px`,
-        height: `${size.height}px`,
+        width:
+          `${size.width}px`,
+
+        height:
+          `${size.height}px`,
+
         borderColor:
           preview.primaryColor,
       }}
@@ -67,14 +83,20 @@ function GatePreview({
   preview: PreviewResult;
 }) {
   const size =
-    calculateDisplaySize(preview);
+    calculateDisplaySize(
+      preview,
+    );
 
   return (
     <div
       className="gate-preview"
       style={{
-        width: `${size.width}px`,
-        height: `${size.height}px`,
+        width:
+          `${size.width}px`,
+
+        height:
+          `${size.height}px`,
+
         borderColor:
           preview.primaryColor,
       }}
@@ -102,6 +124,89 @@ function GatePreview({
   );
 }
 
+function FencePreview({
+  preview,
+}: {
+  preview: PreviewResult;
+}) {
+  const panels =
+    Array.from({
+      length: 6,
+    });
+
+  return (
+    <div className="fence-preview">
+      <div className="fence-ground" />
+
+      <div className="fence-sections">
+        {panels.map(
+          (
+            _,
+            index,
+          ) => (
+            <div
+              className="fence-section"
+              key={index}
+            >
+              <div className="fence-post" />
+
+              <div
+                className="fence-panel"
+                style={{
+                  borderColor:
+                    preview.primaryColor,
+                }}
+              >
+                <div
+                  className="fence-wire fence-wire-1"
+                  style={{
+                    backgroundColor:
+                      preview.primaryColor,
+                  }}
+                />
+
+                <div
+                  className="fence-wire fence-wire-2"
+                  style={{
+                    backgroundColor:
+                      preview.primaryColor,
+                  }}
+                />
+
+                <div
+                  className="fence-wire fence-wire-3"
+                  style={{
+                    backgroundColor:
+                      preview.primaryColor,
+                  }}
+                />
+
+                <div
+                  className="fence-wire fence-wire-4"
+                  style={{
+                    backgroundColor:
+                      preview.primaryColor,
+                  }}
+                />
+
+                <div
+                  className="fence-wire fence-wire-5"
+                  style={{
+                    backgroundColor:
+                      preview.primaryColor,
+                  }}
+                />
+              </div>
+            </div>
+          ),
+        )}
+
+        <div className="fence-post fence-post-last" />
+      </div>
+    </div>
+  );
+}
+
 function ProductPreview({
   preview,
   isValid,
@@ -115,8 +220,8 @@ function ProductPreview({
           </h2>
 
           <p>
-            Reprezentare orientativă a
-            configurației.
+            Reprezentare orientativă
+            a configurației.
           </p>
         </div>
 
@@ -141,10 +246,15 @@ function ProductPreview({
           <GatePreview
             preview={preview}
           />
+        ) : preview.renderer ===
+          "fence-basic" ? (
+          <FencePreview
+            preview={preview}
+          />
         ) : (
           <div className="preview-invalid">
-            Renderer de preview
-            necunoscut.
+            Previzualizarea nu este
+            disponibilă.
           </div>
         )}
       </div>
